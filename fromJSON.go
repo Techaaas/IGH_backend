@@ -1,60 +1,10 @@
-package main
-
-import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"os/exec"
-	"sort"
-	"strings"
-)
-
-type Change struct {
-	Type          string `json:"type"`
-	OldLineNumber int    `json:"old_line_number"`
-	NewLineNumber int    `json:"new_line_number"`
-	Content       string `json:"content"`
-}
-
-type FileDiff struct {
-	Name    string   `json:"name"`
-	Changes []Change `json:"changes"`
-}
-
-type DiffData struct {
-	Commit1 string      `json:"commit1"`
-	Commit2 string      `json:"commit2"`
-	Files   []FileDiff `json:"files"`
-}
-
+// Content struct with Items as []string
 type Content struct {
-	File  string `json:"file"`
+	File  string   `json:"file"`
 	Items []string `json:"items"`
 }
 
-func readJSONFromFile(filePath string) (DiffData, error) {
-	fileContent, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return DiffData{}, err
-	}
-
-	var diffData DiffData
-	err = json.Unmarshal(fileContent, &diffData)
-	if err != nil {
-		return DiffData{}, err
-	}
-
-	return diffData, nil
-}
-
-func getFullCode(commit, fileName string) (string, error) {
-	cmd := exec.Command("git", "show", fmt.Sprintf("%s:%s", commit, fileName))
-	output, err := cmd.Output()
-	if err != nil {
-		return "", err
-	}
-	return string(output), nil
-}
+// ...
 
 func main() {
 	filePath := "diff.json"
@@ -66,7 +16,7 @@ func main() {
 	}
 
 	// Array to store the required elements
-	var resultArray []interface{}
+	var resultArray []string
 
 	// Add commit1 and commit2
 	resultArray = append(resultArray, diffData.Commit1, diffData.Commit2)
@@ -109,30 +59,26 @@ func main() {
 		for _, line := range strings.Split(fullCode, "\n") {
 			if deletion, ok := deletions[i+1]; ok {
 				fileContent.Items = append(fileContent.Items, fmt.Sprintf("-%s", deletion))
+			}
 
-				if addition, ok := additions[i+1]; ok {
-					fileContent.Items = append(fileContent.Items, fmt.Sprintf("+%s", addition))
-
-					i++
-					continue
-				}
-			} else if addition, ok := additions[i+1]; ok {
+			if addition, ok := additions[i+1]; ok {
 				fileContent.Items = append(fileContent.Items, fmt.Sprintf("+%s", addition))
+			}
 
-				i++
-				continue
-			} else {
+			if _, ok := deletions[i+1]; !ok && _, ok := additions[i+1]; !ok {
 				fileContent.Items = append(fileContent.Items, fmt.Sprintf("*%s", line))
 			}
+
 			i++
 		}
 
 		// Append the file content directly to the result array
-		resultArray = append(resultArray, fileContent)
+		resultArray = append(resultArray, fileContent.File)
+		resultArray = append(resultArray, fileContent.Items...)
 
 		fmt.Printf("Output for file %s processed\n", fileDiff.Name)
 	}
 
-	// Print the result array
-	db.addDiffData(resultArray)
+	// Print or use the result array
+	db.addDiffData(resultArray);
 }
