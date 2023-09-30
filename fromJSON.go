@@ -22,8 +22,8 @@ type FileDiff struct {
 }
 
 type DiffData struct {
-	Commit1 string      `json:"commit1"`
-	Commit2 string      `json:"commit2"`
+	Commit1 string     `json:"commit1"`
+	Commit2 string     `json:"commit2"`
 	Files   []FileDiff `json:"files"`
 }
 

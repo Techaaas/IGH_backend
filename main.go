@@ -1,7 +1,8 @@
 package main
 
+var db = database{nil}
+
 func main1() {
-	var db = database{nil}
 	db.connector()
 	db.dropTables()
 	//db.createDifferenceTable()
