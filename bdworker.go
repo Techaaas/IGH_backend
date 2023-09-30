@@ -40,7 +40,7 @@ func (s *database) createInfoTable() {
 	_, err := s.db.Exec("select * from info")
 	if err != nil {
 		_, err := s.db.Exec("create table info (hash1 varchar(255) not null, " +
-			"message varchar(255), primary key(hash1))")
+			"message varchar(255), branch varchar(255), primary key(hash1))")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -62,4 +62,44 @@ func (s *database) dropTables() {
 			log.Fatal(err)
 		}
 	}
+}
+
+func (s *database) addDiffData(arr []string) {
+	s.createDifferenceTable()
+	_, err := s.db.Prepare("INSERT into diff values (?, ?, ?)")
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = s.db.Exec(arr[0], arr[1], arr[2])
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (s *database) addCommitInfo(arr []string) {
+	s.createInfoTable()
+	res, err := s.db.Query("SELECT * where hash=" + arr[0])
+	if err != nil {
+		log.Fatal(err)
+	}
+	if !res.Next() {
+		_, err := s.db.Prepare("INSERT into info values (?, ?, ?)")
+		if err != nil {
+			log.Fatal(err)
+		}
+		_, err = s.db.Exec(arr[0], arr[1], arr[2])
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
+func (s *database) getDiff(hash1 string, hash2 string) string {
+	s.createDifferenceTable()
+	res, err := s.db.Query("select difference where hash1=" + hash1 + " and hash2=" + hash2)
+	if err != nil {
+		log.Fatal(err)
+	}
+	r, err := res.Columns()
+	return r[0]
 }
