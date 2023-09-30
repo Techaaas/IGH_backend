@@ -11,7 +11,7 @@ type database struct {
 }
 
 func (s *database) connect() {
-	connStr := "user=secretanry password=2271799 host=158.160.73.176 port=5432 database=gitdiff sslmode=disable"
+	connStr := "user=secretanry password=2271799 host=localhost port=5432 database=gitdiff sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
