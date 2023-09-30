@@ -8,23 +8,23 @@ import (
 	"strings"
 )
 
-type Change struct {
-	Type          string `json:"type"`
-	OldLineNumber int    `json:"old_line_number"`
-	NewLineNumber int    `json:"new_line_number"`
-	Content       string `json:"content"`
-}
-
-type FileDiff struct {
-	Name    string   `json:"name"`
-	Changes []Change `json:"changes"`
-}
-
-type DiffData struct {
-	Commit1 string      `json:"commit1"`
-	Commit2 string      `json:"commit2"`
-	Files   []FileDiff `json:"files"`
-}
+//type Change struct {
+//	Type          string `json:"type"`
+//	OldLineNumber int    `json:"old_line_number"`
+//	NewLineNumber int    `json:"new_line_number"`
+//	Content       string `json:"content"`
+//}
+//
+//type FileDiff struct {
+//	Name    string   `json:"name"`
+//	Changes []Change `json:"changes"`
+//}
+//
+//type DiffData struct {
+//	Commit1 string      `json:"commit1"`
+//	Commit2 string      `json:"commit2"`
+//	Files   []FileDiff `json:"files"`
+//}
 
 func gitDiffToJSON(commit1, commit2, outputFile string) error {
 	diffOutput, err := runGitDiff(commit1, commit2)
@@ -77,16 +77,16 @@ func parseDiffOutput(diffOutput string) ([]FileDiff, error) {
 				fileDiffs = append(fileDiffs, currentFileDiff)
 			}
 			currentFileDiff = FileDiff{Name: strings.TrimSpace(strings.TrimPrefix(line, "+++ b/"))}
-        case strings.HasPrefix(line, "---"):
-            
+		case strings.HasPrefix(line, "---"):
+
 		case strings.HasPrefix(line, "+"):
 			newLineNumber++
-			content := line[1:] 
+			content := line[1:]
 			change := Change{Type: "addition", OldLineNumber: 0, NewLineNumber: newLineNumber + 2, Content: content}
 			currentFileDiff.Changes = append(currentFileDiff.Changes, change)
 		case strings.HasPrefix(line, "-"):
 			oldLineNumber++
-			content := line[1:] 
+			content := line[1:]
 			change := Change{Type: "deletion", OldLineNumber: oldLineNumber + 2, NewLineNumber: 0, Content: content}
 			currentFileDiff.Changes = append(currentFileDiff.Changes, change)
 		default:
@@ -99,7 +99,6 @@ func parseDiffOutput(diffOutput string) ([]FileDiff, error) {
 
 	return fileDiffs, nil
 }
-
 
 func writeJSONToFile(data interface{}, outputFile string) error {
 	jsonData, err := json.MarshalIndent(data, "", "  ")
@@ -124,7 +123,7 @@ func extractLineNumbers(header string) (int, int) {
 	return oldStart, newStart
 }
 
-func main() {
+func main3() {
 	var commit1, commit2, outputFile string
 
 	fmt.Print("Enter the hash of the first commit: ")

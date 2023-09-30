@@ -7,9 +7,9 @@ import (
 	"net/http"
 )
 
-func main() {
-	var db = database{nil}
-	db.connector()
+func main2() {
+	//var db = database{nil}
+	//db.connector()
 	// Echo instance
 	e := echo.New()
 

@@ -1,6 +1,6 @@
 package main
 
-var db database
+var db = database{nil}
 
 func main1() {
 	db.connector()
