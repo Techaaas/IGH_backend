@@ -12,7 +12,7 @@ type database struct {
 }
 
 func (s *database) connect() {
-	connStr := "user=secretanry password=2271799 host=158.160.73.176 port=128 database=gitdiff sslmode=disable"
+	connStr := "user=secretanry password=2271799 host=localhost port=5432 database=gitdiff sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
@@ -101,10 +101,12 @@ func (s *database) addCommitInfo(arr []string) {
 
 func (s *database) getDiff(hash1 string, hash2 string) string {
 	s.createDifferenceTable()
-	res, err := s.db.Query("select difference where hash1=" + hash1 + " and hash2=" + hash2)
+	res, err := s.db.Query("select difference from diff where hash1='" + hash1 + "' and hash2='" + hash2 + "'")
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println(res)
 	r, err := res.Columns()
+	fmt.Println(r)
 	return r[0]
 }

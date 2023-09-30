@@ -1,12 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"net/http"
 )
 
 func main() {
+	var db = database{nil}
+	db.connector()
 	// Echo instance
 	e := echo.New()
 
@@ -15,7 +18,10 @@ func main() {
 	e.Use(middleware.Recover())
 
 	// Routes
-	e.GET("/", hello)
+	helloHandler := func(c echo.Context) error {
+		return hello(c, db)
+	}
+	e.GET("/", helloHandler)
 	e.GET("/bye", goodbye)
 	e.GET("/:branch/commits", getCommits)
 	e.GET("branches", getBranches)
@@ -26,7 +32,9 @@ func main() {
 }
 
 // Handler
-func hello(c echo.Context) error {
+func hello(c echo.Context, db database) error {
+	var a = db.getDiff("123", "123")
+	fmt.Println(a + " IM HERE")
 	return c.JSON(http.StatusOK, "{\n  \"squadName\" : \"Super Hero Squad\",\n  \"homeTown\" : \"Metro City\",\n  \"formed\" : 2016,\n  \"secretBase\" : \"Super tower\",\n  \"active\" : true,\n  \"members\" : [\n    {\n      \"name\" : \"Molecule Man\",\n      \"age\" : 29,\n      \"secretIdentity\" : \"Dan Jukes\",\n      \"powers\" : [\n        \"Radiation resistance\",\n        \"Turning tiny\",\n        \"Radiation blast\"\n      ]\n    },\n    {\n      \"name\" : \"Madame Uppercut\",\n      \"age\" : 39,\n      \"secretIdentity\" : \"Jane Wilson\",\n      \"powers\" : [\n        \"Million tonne punch\",\n        \"Damage resistance\",\n        \"Superhuman reflexes\"\n      ]\n    },\n    {\n      \"name\" : \"Eternal Flame\",\n      \"age\" : 1000000,\n      \"secretIdentity\" : \"Unknown\",\n      \"powers\" : [\n        \"Immortality\",\n        \"Heat Immunity\",\n        \"Inferno\",\n        \"Teleportation\",\n        \"Interdimensional travel\"\n      ]\n    }\n  ]\n}\n")
 }
 
