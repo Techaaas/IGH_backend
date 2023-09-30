@@ -1,0 +1,58 @@
+{
+  "commit1": "fcb3c93728e025ebcd2e1390c7df716d86cf7644",
+  "commit2": "dc89ec1b5724cb6fc0d1eb3a9e2910a74a9a43d5",
+  "files": [
+    {
+      "name": "fromJSON.go",
+      "changes": [
+        {
+          "type": "deletion",
+          "old_line_number": 25,
+          "new_line_number": 0,
+          "content": "\tCommit1 string      `json:\"commit1\"`"
+        },
+        {
+          "type": "deletion",
+          "old_line_number": 26,
+          "new_line_number": 0,
+          "content": "\tCommit2 string      `json:\"commit2\"`"
+        },
+        {
+          "type": "addition",
+          "old_line_number": 0,
+          "new_line_number": 25,
+          "content": "\tCommit1 string     `json:\"commit1\"`"
+        },
+        {
+          "type": "addition",
+          "old_line_number": 0,
+          "new_line_number": 26,
+          "content": "\tCommit2 string     `json:\"commit2\"`"
+        }
+      ]
+    },
+    {
+      "name": "main.go",
+      "changes": [
+        {
+          "type": "addition",
+          "old_line_number": 0,
+          "new_line_number": 4,
+          "content": "var db = database{nil}"
+        },
+        {
+          "type": "addition",
+          "old_line_number": 0,
+          "new_line_number": 5,
+          "content": ""
+        },
+        {
+          "type": "deletion",
+          "old_line_number": 4,
+          "new_line_number": 0,
+          "content": "\tvar db = database{nil}"
+        }
+      ]
+    }
+  ]
+}

@@ -22,17 +22,14 @@ type FileDiff struct {
 }
 
 type DiffData struct {
-	Commit1 string     `json:"commit1"`
-	Commit2 string     `json:"commit2"`
+	Commit1 string      `json:"commit1"`
+	Commit2 string      `json:"commit2"`
 	Files   []FileDiff `json:"files"`
 }
 
 type Content struct {
 	File  string `json:"file"`
-	Items []struct {
-		Type   string `json:"type"`
-		String string `json:"string"`
-	} `json:"items"`
+	Items []string `json:"items"`
 }
 
 func readJSONFromFile(filePath string) (DiffData, error) {
@@ -71,9 +68,8 @@ func main() {
 	// Array to store the required elements
 	var resultArray []interface{}
 
-	// Add commit1
-	resultArray = append(resultArray, diffData.Commit1)
-	resultArray = append(resultArray, diffData.Commit2)
+	// Add commit1 and commit2
+	resultArray = append(resultArray, diffData.Commit1, diffData.Commit2)
 
 	for _, fileDiff := range diffData.Files {
 		additions := make(map[int]string)
@@ -112,33 +108,21 @@ func main() {
 		i := 0
 		for _, line := range strings.Split(fullCode, "\n") {
 			if deletion, ok := deletions[i+1]; ok {
-				fileContent.Items = append(fileContent.Items, struct {
-					Type   string `json:"type"`
-					String string `json:"string"`
-				}{Type: "-", String: deletion})
+				fileContent.Items = append(fileContent.Items, fmt.Sprintf("-%s", deletion))
 
 				if addition, ok := additions[i+1]; ok {
-					fileContent.Items = append(fileContent.Items, struct {
-						Type   string `json:"type"`
-						String string `json:"string"`
-					}{Type: "+", String: addition})
+					fileContent.Items = append(fileContent.Items, fmt.Sprintf("+%s", addition))
 
 					i++
 					continue
 				}
 			} else if addition, ok := additions[i+1]; ok {
-				fileContent.Items = append(fileContent.Items, struct {
-					Type   string `json:"type"`
-					String string `json:"string"`
-				}{Type: "+", String: addition})
+				fileContent.Items = append(fileContent.Items, fmt.Sprintf("+%s", addition))
 
 				i++
 				continue
 			} else {
-				fileContent.Items = append(fileContent.Items, struct {
-					Type   string `json:"type"`
-					String string `json:"string"`
-				}{Type: "*", String: line})
+				fileContent.Items = append(fileContent.Items, fmt.Sprintf("*%s", line))
 			}
 			i++
 		}
@@ -149,4 +133,6 @@ func main() {
 		fmt.Printf("Output for file %s processed\n", fileDiff.Name)
 	}
 
+	// Print the result array
+	db.addDiffData(resultArray)
 }
