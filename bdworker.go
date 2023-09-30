@@ -7,9 +7,7 @@ import (
 )
 
 type database struct {
-	db        *sql.DB
-	diffTable bool
-	infoTable bool
+	db *sql.DB
 }
 
 func (s *database) connect() {
@@ -28,36 +26,40 @@ func (s *database) connector() {
 }
 
 func (s *database) createDifferenceTable() {
-	if !s.diffTable {
-		_, err := s.db.Exec("create table diff (hash1 varchar(255) not null, " +
+	_, err := s.db.Exec("select * from diff")
+	if err != nil {
+		_, err = s.db.Exec("create table diff (hash1 varchar(255) not null, " +
 			"hash2 varchar(255) not null, difference jsonb not null)")
 		if err != nil {
 			log.Fatal(err)
 		}
-		s.diffTable = true
 	}
 }
 
 func (s *database) createInfoTable() {
-	if !s.infoTable {
+	_, err := s.db.Exec("select * from info")
+	if err != nil {
 		_, err := s.db.Exec("create table info (hash1 varchar(255) not null, " +
 			"message varchar(255), primary key(hash1))")
 		if err != nil {
 			log.Fatal(err)
 		}
-		s.infoTable = true
 	}
 }
 
 func (s *database) dropTables() {
-	_, err := s.db.Exec("drop table diff")
-	if err != nil {
-		log.Fatal(err)
+	_, err := s.db.Exec("select * from diff")
+	if err == nil {
+		_, err = s.db.Exec("drop table diff")
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
-	s.diffTable = false
-	_, err = s.db.Exec("drop table info")
-	if err != nil {
-		log.Fatal(err)
+	_, err = s.db.Exec("select * from info")
+	if err == nil {
+		_, err = s.db.Exec("drop table info")
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
-	s.infoTable = false
 }

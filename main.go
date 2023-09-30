@@ -1,9 +1,9 @@
 package main
 
 func main() {
-	var db = database{nil, false, false}
+	var db = database{nil}
 	db.connector()
-	//db.dropTables()
+	db.dropTables()
 	//db.createDifferenceTable()
 	//db.createInfoTable()
 	defer db.db.Close()
