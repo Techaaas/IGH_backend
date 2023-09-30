@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/lib/pq"
 	"log"
 )
@@ -11,12 +12,16 @@ type database struct {
 }
 
 func (s *database) connect() {
-	connStr := "user=secretanry password=2271799 host=158.160.73.176 port=5432 database=gitdiff sslmode=disable"
+	connStr := "user=secretanry password=2271799 host=158.160.73.176 port=128 database=gitdiff sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
 	s.db = db
+	res, err := s.db.Exec("SELECT current_user")
+	if err != nil {
+		fmt.Print(res)
+	}
 }
 
 func (s *database) connector() {
