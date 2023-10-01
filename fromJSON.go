@@ -61,7 +61,6 @@ func getFullCode(commit, fileName string) (string, error) {
 
 func main7() {
 	db.connector()
-	db.dropTables()
 	filePath := "diff.json"
 
 	diffData, err := readJSONFromFile(filePath)
@@ -69,6 +68,7 @@ func main7() {
 		fmt.Println("Error reading JSON file:", err)
 		return
 	}
+	var contentArray []Content
 
 	// Slice to store elements of the result
 	var resultArray []string
@@ -105,7 +105,10 @@ func main7() {
 			deletionKeys = append(deletionKeys, key)
 		}
 		sort.Ints(deletionKeys)
-
+		if strings.Contains(fileDiff.Name, "/dev/null") {
+			fmt.Println("!")
+			return
+		}
 		fullCode, err := getFullCode(diffData.Commit2, fileDiff.Name)
 		if err != nil {
 			fmt.Printf("Error getting full code for file %s: %v\n", fileDiff.Name, err)
@@ -158,22 +161,19 @@ func main7() {
 
 		// Add the JSON string to the map
 		contentMap[fileDiff.Name] = string(fileContentJSON)
+		contentArray = append(contentArray, fileContent)
 
 		fmt.Printf("Output for file %s processed\n", fileDiff.Name)
 	}
 
 	// Convert the contentMap to a JSON string
-	contentJSON, err := json.Marshal(contentMap)
+
+	contentJSON, err := json.Marshal(contentArray)
 	if err != nil {
 		fmt.Println("Error marshaling content to JSON:", err)
 		return
 	}
-
-	// Add the contentJSON as a string to the resultArray
 	resultArray = append(resultArray, string(contentJSON))
-
-	fmt.Println(resultArray[0])
-	fmt.Println(resultArray[1])
 
 	// Print the result instead of saving to a file
 	db.addDiffData(resultArray)

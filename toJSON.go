@@ -3,33 +3,22 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
 )
 
-//type Change struct {
-//	Type          string `json:"type"`
-//	OldLineNumber int    `json:"old_line_number"`
-//	NewLineNumber int    `json:"new_line_number"`
-//	Content       string `json:"content"`
-//}
-//
-//type FileDiff struct {
-//	Name    string   `json:"name"`
-//	Changes []Change `json:"changes"`
-//}
-//
-//type DiffData struct {
-//	Commit1 string      `json:"commit1"`
-//	Commit2 string      `json:"commit2"`
-//	Files   []FileDiff `json:"files"`
-//}
-
 func gitDiffToJSON(commit1, commit2, outputFile string) error {
 	diffOutput, err := runGitDiff(commit1, commit2)
 	if err != nil {
 		return fmt.Errorf("error running git diff: %v", err)
+	}
+
+	// Skip if the diff output is empty
+	if diffOutput == "" {
+		fmt.Printf("No differences found between %s and %s. Skipping...\n", commit1, commit2)
+		return nil
 	}
 
 	fileDiffs, err := parseDiffOutput(diffOutput)
@@ -123,23 +112,51 @@ func extractLineNumbers(header string) (int, int) {
 	return oldStart, newStart
 }
 
-func main3() {
-	var commit1, commit2, outputFile string
+func parseGitLog(logOutput string) []string {
+	// Split the log output into individual commits
+	commitStrings := strings.Split(logOutput, "commit ")
+	fmt.Println(commitStrings)
 
-	fmt.Print("Enter the hash of the first commit: ")
-	fmt.Scan(&commit1)
-
-	fmt.Print("Enter the hash of the second commit: ")
-	fmt.Scan(&commit2)
-
-	fmt.Print("Enter the name of the output JSON file: ")
-	fmt.Scan(&outputFile)
-
-	err := gitDiffToJSON(commit1, commit2, outputFile)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
+	// Filter out empty strings and trim spaces
+	var commits []string
+	for _, commitString := range commitStrings {
+		trimmedCommit := strings.TrimSpace(commitString)
+		if trimmedCommit != "" {
+			// Extract only the commit hash (assuming it's the first 7 characters)
+			commitHash := trimmedCommit[:7]
+			commits = append(commits, commitHash)
+		}
 	}
 
-	fmt.Printf("Differences saved to %s\n", outputFile)
+	return commits
+}
+
+func main2() {
+	var outputFile string
+
+	outputFile = "diff.json"
+
+	// Run the git log command without the --all option to get commits from all branches
+	cmd := exec.Command("git", "log")
+	output, err := cmd.Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Parse the output
+	commits := parseGitLog(string(output))
+
+	// Generate JSON files for all combinations of commits
+	for i := 0; i < len(commits); i++ {
+		for j := i + 1; j < len(commits); j++ {
+			commit1 := commits[i]
+			commit2 := commits[j]
+			outputFileName := fmt.Sprintf(outputFile)
+			err := gitDiffToJSON(commit1, commit2, outputFileName)
+			if err != nil {
+				return
+			}
+			main7()
+		}
+	}
 }

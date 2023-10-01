@@ -10,6 +10,8 @@ import (
 func main() {
 	var db = database{nil}
 	db.connector()
+	db.dropTables()
+	main2()
 	// Echo instance
 	e := echo.New()
 
