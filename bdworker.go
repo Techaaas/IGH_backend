@@ -75,10 +75,6 @@ func (s *database) addDiffData(arr []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//_, err = s.db.Exec(arr[0], arr[1], arr[2])
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
 }
 
 func (s *database) addCommitInfo(arr []string) {
@@ -112,4 +108,34 @@ func (s *database) getDiff(hash1 string, hash2 string) string {
 		return r
 	}
 	return ""
+}
+
+func (s *database) getAllBranches() []string {
+	s.createInfoTable()
+	res, err := s.db.Query("select distinct branch from info")
+	if err != nil {
+		log.Fatal(err)
+	}
+	var r []string
+	var branch string
+	for res.Next() {
+		res.Scan(&branch)
+		r = append(r, branch)
+	}
+	return r
+}
+
+func (s *database) getAllCommits(branch string) []string {
+	s.createInfoTable()
+	res, err := s.db.Query("select hash from info where branch='" + branch + "'")
+	if err != nil {
+		log.Fatal(err)
+	}
+	var r []string
+	var temp string
+	for res.Next() {
+		res.Scan(&temp)
+		r = append(r, temp)
+	}
+	return r
 }
