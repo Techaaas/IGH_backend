@@ -16,6 +16,17 @@ func main() {
 	// Middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{echo.HeaderAccessControlAllowOrigin, echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowMethods: []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
+	}))
+
+	//DefaultCORSConfig = CORSConfig{
+	//	Skipper:      DefaultSkipper,
+	//	AllowOrigins: []string{"*"},
+	//	AllowMethods: []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
+	//}
 
 	// Routes
 	helloHandler := func(c echo.Context) error {
