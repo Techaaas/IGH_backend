@@ -28,8 +28,11 @@ type DiffData struct {
 }
 
 type Content struct {
-	File  string   `json:"file"`
-	Items []string `json:"items"`
+	File  string `json:"file"`
+	Items []struct {
+		Type   string `json:"type"`
+		String string `json:"string"`
+	} `json:"items"`
 }
 
 func readJSONFromFile(filePath string) (DiffData, error) {
@@ -57,75 +60,121 @@ func getFullCode(commit, fileName string) (string, error) {
 }
 
 func main() {
-    filePath := "diff.json"
+	db.Connector()
+	db.dropTables()
+	filePath := "diff.json"
 
-    diffData, err := readJSONFromFile(filePath)
-    if err != nil {
-        fmt.Println("Error reading JSON file:", err)
-        return
-    }
+	diffData, err := readJSONFromFile(filePath)
+	if err != nil {
+		fmt.Println("Error reading JSON file:", err)
+		return
+	}
 
-    // Array to store the required elements
-    var resultArray []string
+	// Slice to store elements of the result
+	var resultArray []string
 
-    // Add commit1 and commit2
-    resultArray = append(resultArray, diffData.Commit1, diffData.Commit2)
+	// Add commit1 as string
+	resultArray = append(resultArray, `"`+diffData.Commit1+`"`)
+	// Add commit2 as string
+	resultArray = append(resultArray, `"`+diffData.Commit2+`"`)
 
-    for _, fileDiff := range diffData.Files {
-        additions := make(map[int]string)
-        deletions := make(map[int]string)
+	// Create a map for the Content structure
+	contentMap := make(map[string]interface{})
 
-        for _, change := range fileDiff.Changes {
-            if change.Type == "addition" {
-                additions[change.NewLineNumber] = change.Content
-            } else if change.Type == "deletion" {
-                deletions[change.OldLineNumber] = change.Content
-            }
-        }
+	for _, fileDiff := range diffData.Files {
+		additions := make(map[int]string)
+		deletions := make(map[int]string)
 
-        var additionKeys []int
-        var deletionKeys []int
+		for _, change := range fileDiff.Changes {
+			if change.Type == "addition" {
+				additions[change.NewLineNumber] = change.Content
+			} else if change.Type == "deletion" {
+				deletions[change.OldLineNumber] = change.Content
+			}
+		}
 
-        for key := range additions {
-            additionKeys = append(additionKeys, key)
-        }
-        sort.Ints(additionKeys)
+		var additionKeys []int
+		var deletionKeys []int
 
-        for key := range deletions {
-            deletionKeys = append(deletionKeys, key)
-        }
-        sort.Ints(deletionKeys)
+		for key := range additions {
+			additionKeys = append(additionKeys, key)
+		}
+		sort.Ints(additionKeys)
 
-        fullCode, err := getFullCode(diffData.Commit2, fileDiff.Name)
-        if err != nil {
-            fmt.Printf("Error getting full code for file %s: %v\n", fileDiff.Name, err)
-            continue
-        }
+		for key := range deletions {
+			deletionKeys = append(deletionKeys, key)
+		}
+		sort.Ints(deletionKeys)
 
-        resultArray = append(resultArray, fileDiff.Name)
+		fullCode, err := getFullCode(diffData.Commit2, fileDiff.Name)
+		if err != nil {
+			fmt.Printf("Error getting full code for file %s: %v\n", fileDiff.Name, err)
+			continue
+		}
 
-        i := 0
-        for _, line := range strings.Split(fullCode, "\n") {
-            if deletion, ok := deletions[i+1]; ok {
-                resultArray = append(resultArray, fmt.Sprintf("-%s", deletion))
-            }
+		var fileContent Content
+		fileContent.File = fileDiff.Name
 
-            if addition, ok := additions[i+1]; ok {
-                resultArray = append(resultArray, fmt.Sprintf("+%s", addition))
-            }
+		i := 0
+		for _, line := range strings.Split(fullCode, "\n") {
+			if deletion, ok := deletions[i+1]; ok {
+				fileContent.Items = append(fileContent.Items, struct {
+					Type   string `json:"type"`
+					String string `json:"string"`
+				}{Type: "-", String: deletion})
 
-            if _, ok := deletions[i+1]; !ok {
-                if _, ok := additions[i+1]; !ok {
-                    resultArray = append(resultArray, fmt.Sprintf("*%s", line))
-                }
-            }
+				if addition, ok := additions[i+1]; ok {
+					fileContent.Items = append(fileContent.Items, struct {
+						Type   string `json:"type"`
+						String string `json:"string"`
+					}{Type: "+", String: addition})
 
-            i++
-        }
+					i++
+					continue
+				}
+			} else if addition, ok := additions[i+1]; ok {
+				fileContent.Items = append(fileContent.Items, struct {
+					Type   string `json:"type"`
+					String string `json:"string"`
+				}{Type: "+", String: addition})
 
-        fmt.Printf("Output for file %s processed\n", fileDiff.Name)
-    }
+				i++
+				continue
+			} else {
+				fileContent.Items = append(fileContent.Items, struct {
+					Type   string `json:"type"`
+					String string `json:"string"`
+				}{Type: "*", String: line})
+			}
+			i++
+		}
 
-    // Print or use the result array
-    db.addDiffData(resultArray)
+		// Marshal the fileContent to a JSON string
+		fileContentJSON, err := json.Marshal(fileContent)
+		if err != nil {
+			fmt.Println("Error marshaling file content to JSON:", err)
+			return
+		}
+
+		// Add the JSON string to the map
+		contentMap[fileDiff.Name] = string(fileContentJSON)
+
+		fmt.Printf("Output for file %s processed\n", fileDiff.Name)
+	}
+
+	// Convert the contentMap to a JSON string
+	contentJSON, err := json.Marshal(contentMap)
+	if err != nil {
+		fmt.Println("Error marshaling content to JSON:", err)
+		return
+	}
+
+	// Add the contentJSON as a string to the resultArray
+	resultArray = append(resultArray, string(contentJSON))
+
+	// Join the resultArray into a single JSON string
+	resultJSON := "[" + strings.Join(resultArray, ",") + "]"
+
+	// Print the result instead of saving to a file
+	ad.addDiffData(resultArray)
 }
