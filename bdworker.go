@@ -12,7 +12,7 @@ type database struct {
 }
 
 func (s *database) connect() {
-	connStr := "user=secretanry password=2271799 host=localhost port=5432 database=gitdiff sslmode=disable"
+	connStr := "user=user password=root host=localhost port=5432 database=gitdiff sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
@@ -52,6 +52,17 @@ func (s *database) createInfoTable() {
 	}
 }
 
+func (s *database) createBranchDiffTable() {
+	_, err := s.db.Exec("select * from branchdiff")
+	if err != nil {
+		_, err := s.db.Exec("create table branchdiff (branch1 varchar(255) not null, " +
+			"branch2 varchar(255) not null, difference varchar)")
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
 func (s *database) dropTables() {
 	_, err := s.db.Exec("select * from diff")
 	if err == nil {
@@ -67,11 +78,27 @@ func (s *database) dropTables() {
 			log.Fatal(err)
 		}
 	}
+	_, err = s.db.Exec("select * from branchdiff")
+	if err == nil {
+		_, err = s.db.Exec("drop table branchdiff")
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
 }
 
 func (s *database) addDiffData(arr []string) {
 	s.createDifferenceTable()
 	_, err := s.db.Exec("INSERT into diff values ($1, $2, $3)", arr[0], arr[1], arr[2])
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (s *database) addBranchDiffData(arr []string) {
+	s.createBranchDiffTable()
+	_, err := s.db.Exec("INSERT into branchdiff values ($1, $2, $3)", arr[0], arr[1], arr[2])
 	if err != nil {
 		log.Fatal(err)
 	}
