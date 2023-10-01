@@ -22,8 +22,8 @@ type FileDiff struct {
 }
 
 type DiffData struct {
-	Commit1 string      `json:"commit1"`
-	Commit2 string      `json:"commit2"`
+	Commit1 string     `json:"commit1"`
+	Commit2 string     `json:"commit2"`
 	Files   []FileDiff `json:"files"`
 }
 
@@ -60,7 +60,7 @@ func getFullCode(commit, fileName string) (string, error) {
 }
 
 func main() {
-	db.Connector()
+	db.connector()
 	db.dropTables()
 	filePath := "diff.json"
 
@@ -172,9 +172,6 @@ func main() {
 	// Add the contentJSON as a string to the resultArray
 	resultArray = append(resultArray, string(contentJSON))
 
-	// Join the resultArray into a single JSON string
-	resultJSON := "[" + strings.Join(resultArray, ",") + "]"
-
 	// Print the result instead of saving to a file
-	ad.addDiffData(resultArray)
+	db.addDiffData(resultArray)
 }
