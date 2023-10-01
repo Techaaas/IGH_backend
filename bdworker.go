@@ -34,7 +34,7 @@ func (s *database) createDifferenceTable() {
 	_, err := s.db.Exec("select * from diff")
 	if err != nil {
 		_, err = s.db.Exec("create table diff (hash1 varchar(255) not null, " +
-			"hash2 varchar(255) not null, difference jsonb not null)")
+			"hash2 varchar(255) not null, difference varchar not null)")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -71,14 +71,14 @@ func (s *database) dropTables() {
 
 func (s *database) addDiffData(arr []string) {
 	s.createDifferenceTable()
-	_, err := s.db.Prepare("INSERT into diff values (?, ?, ?)")
+	_, err := s.db.Exec("INSERT into diff values ($1, $2, $3)", arr[0], arr[1], arr[2])
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = s.db.Exec(arr[0], arr[1], arr[2])
-	if err != nil {
-		log.Fatal(err)
-	}
+	//_, err = s.db.Exec(arr[0], arr[1], arr[2])
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 }
 
 func (s *database) addCommitInfo(arr []string) {
