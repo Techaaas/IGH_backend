@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"net/http"
+	"strings"
 )
 
 func main() {
@@ -20,14 +21,19 @@ func main() {
 	helloHandler := func(c echo.Context) error {
 		return hello(c, db)
 	}
-	getDiffh := func(c echo.Context) error {
+	getDiffHandler := func(c echo.Context) error {
 		return getDiff(c, db)
 	}
+	getBranchesHandler := func(c echo.Context) error {
+		return getBranches(c, db)
+	}
+	getCommitsHandler := func(c echo.Context) error {
+		return getCommits(c, db)
+	}
 	e.GET("/", helloHandler)
-	e.GET("/bye", goodbye)
-	e.GET("/:branch/commits", getCommits)
-	e.GET("branches", getBranches)
-	e.GET("/diff/:hashFirst/:hashSecond", getDiffh)
+	e.GET("/:branch/commits", getCommitsHandler)
+	e.GET("branches", getBranchesHandler)
+	e.GET("/diff/:hashFirst/:hashSecond", getDiffHandler)
 
 	// Start server
 	e.Logger.Fatal(e.Start("0.0.0.0:8000"))
@@ -35,22 +41,16 @@ func main() {
 
 // Handler
 func hello(c echo.Context, db database) error {
-	//fmt.Println(a + " IM HERE")
-	return c.JSON(http.StatusOK, "")
+	return c.JSON(http.StatusOK, "Techaas. All rights reserved. 2023")
 }
 
-func goodbye(c echo.Context) error {
-	return c.String(http.StatusOK, "Bye bye!!")
-}
-
-func getCommits(c echo.Context) error {
+func getCommits(c echo.Context, db database) error {
 	branch := c.Param("branch")
-	// DO SOMETHING
-	return c.String(http.StatusOK, branch)
+	return c.String(http.StatusOK, strings.Join(db.getAllCommits(branch), "%"))
 }
 
-func getBranches(c echo.Context) error {
-	return c.String(http.StatusOK, "List of all branches: [хахахахахаххахахах]")
+func getBranches(c echo.Context, db database) error {
+	return c.String(http.StatusOK, strings.Join(db.getAllBranches(), "%"))
 }
 
 func getDiff(c echo.Context, db database) error {
@@ -59,5 +59,5 @@ func getDiff(c echo.Context, db database) error {
 	commit1 = c.Param("hashFirst")
 	commit2 = c.Param("hashSecond")
 	var b = db.getDiff(commit1, commit2)
-	return c.String(http.StatusOK, b)
+	return c.JSON(http.StatusOK, b)
 }
