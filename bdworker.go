@@ -102,11 +102,14 @@ func (s *database) addCommitInfo(arr []string) {
 func (s *database) getDiff(hash1 string, hash2 string) string {
 	s.createDifferenceTable()
 	res, err := s.db.Query("select difference from diff where hash1='" + hash1 + "' and hash2='" + hash2 + "'")
+	//res, err := s.db.Query("select * from diff")
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(res)
-	r, err := res.Columns()
-	fmt.Println(r)
-	return r[0]
+	var r string
+	for res.Next() {
+		res.Scan(&r)
+		return r
+	}
+	return ""
 }

@@ -59,7 +59,7 @@ func getFullCode(commit, fileName string) (string, error) {
 	return string(output), nil
 }
 
-func main() {
+func main7() {
 	db.connector()
 	db.dropTables()
 	filePath := "diff.json"
@@ -74,9 +74,9 @@ func main() {
 	var resultArray []string
 
 	// Add commit1 as string
-	resultArray = append(resultArray, `"`+diffData.Commit1+`"`)
+	resultArray = append(resultArray, diffData.Commit1)
 	// Add commit2 as string
-	resultArray = append(resultArray, `"`+diffData.Commit2+`"`)
+	resultArray = append(resultArray, diffData.Commit2)
 
 	// Create a map for the Content structure
 	contentMap := make(map[string]interface{})
@@ -171,6 +171,9 @@ func main() {
 
 	// Add the contentJSON as a string to the resultArray
 	resultArray = append(resultArray, string(contentJSON))
+
+	fmt.Println(resultArray[0])
+	fmt.Println(resultArray[1])
 
 	// Print the result instead of saving to a file
 	db.addDiffData(resultArray)

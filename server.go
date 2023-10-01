@@ -7,9 +7,9 @@ import (
 	"net/http"
 )
 
-func main2() {
-	//var db = database{nil}
-	//db.connector()
+func main() {
+	var db = database{nil}
+	db.connector()
 	// Echo instance
 	e := echo.New()
 
@@ -33,9 +33,9 @@ func main2() {
 
 // Handler
 func hello(c echo.Context, db database) error {
-	var a = db.getDiff("123", "123")
+	var a = db.getDiff("fcb3c93728e025ebcd2e1390c7df716d86cf7644", "dc89ec1b5724cb6fc0d1eb3a9e2910a74a9a43d5")
 	fmt.Println(a + " IM HERE")
-	return c.JSON(http.StatusOK, "{\n  \"squadName\" : \"Super Hero Squad\",\n  \"homeTown\" : \"Metro City\",\n  \"formed\" : 2016,\n  \"secretBase\" : \"Super tower\",\n  \"active\" : true,\n  \"members\" : [\n    {\n      \"name\" : \"Molecule Man\",\n      \"age\" : 29,\n      \"secretIdentity\" : \"Dan Jukes\",\n      \"powers\" : [\n        \"Radiation resistance\",\n        \"Turning tiny\",\n        \"Radiation blast\"\n      ]\n    },\n    {\n      \"name\" : \"Madame Uppercut\",\n      \"age\" : 39,\n      \"secretIdentity\" : \"Jane Wilson\",\n      \"powers\" : [\n        \"Million tonne punch\",\n        \"Damage resistance\",\n        \"Superhuman reflexes\"\n      ]\n    },\n    {\n      \"name\" : \"Eternal Flame\",\n      \"age\" : 1000000,\n      \"secretIdentity\" : \"Unknown\",\n      \"powers\" : [\n        \"Immortality\",\n        \"Heat Immunity\",\n        \"Inferno\",\n        \"Teleportation\",\n        \"Interdimensional travel\"\n      ]\n    }\n  ]\n}\n")
+	return c.JSON(http.StatusOK, a)
 }
 
 func goodbye(c echo.Context) error {
